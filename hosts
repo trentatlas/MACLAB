@@ -1,0 +1,4 @@
+10.199.25.100   bastion.aegisdawn.com   bastion
+10.199.25.201   rhelsrv1.aegisdawn.com  rhelsrv1
+10.199.25.202   rhelsrv2.aegisdawn.com  rhelsrv2
+192.168.192.100 rhelmstr.aegisdawn.com  rhelmstr

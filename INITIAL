@@ -1,0 +1,260 @@
+
+- rescue
+  - /etc/fstab
+  - password root and student
+
+-- resize NVME DRIVE
+
+-- setup networking and hostname
+rhelsrv1
+ens160 192.168.192.201/24 dmz
+ens256 10.199.25.201/24 internal - disable IPv6
+
+rhelsrv2
+ens160 192.168.192.202/24 dmz
+ens256 10.199.25.202/24 internal - disable IPv6
+
+- #firewall-cmd --get-default-zone
+- #firewall-cmd --state
+
+- #firewall-cmd --change-interface=ens160 --zone=dmz --permanent
+- #firewall-cmd --change-interface=ens256 --zone=internal --permanent
+- #firewall-cmd --reload
+- #firewall-cmd --list-all --zone=dmz
+- #firewall-cmd --list-all --zone=internal
+
+- CONFIGURE  SSH to listen on INTERNAL port 2222/tcp
+ - #firewall-cmd --state
+ - #firewall-cmd --add-port=2222/tcp --zone=internal --permanent
+ - #firewall-cmd --reload
+ - #firewall-cmd --list-all --zone=internal
+ - /etc/ssh/sshd_config
+   - ListenAddress 10.199.25.201
+   - semanage port -a -t ssh_port_t -p tcp 2222
+   - edit restart [Service] from 42 to 18 
+
+
+
+- PERSISTIST JOURNALD
+  #mkdir -p /var/log/journal
+  #systemctl restart systemd-journal-flush.service 
+ 
+
+- Configure Apache 
+- /dev/sda
+create WWWVG 
+# pvcreate /dev/sda
+# vgcreate WWWVG /dev/sda
+
+
+lv 75% of VG
+
+# lvcreate -n VARWWWLV -l75%FREE WWWVG
+# lvs WWWVG
+  LV       VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  VARWWWLV WWWVG -wi-a----- <13.50g   
+
+
+
+install httpd
+Listen IP:80 DMZ IP - Not Internal
+
+
+# firewall-cmd --add-service=http --zone=dmz --permanent
+# firewall-cmd --reload
+# firewall-cmd --list-all --zone=dmz
+
+201 - index.html west.external
+202 - index.html east.external
+
+
+trent$ curl http://west.external
+west.external
+
+trent$ curl http://east.external
+east.external
+
+
+
+-- install 
+   chrony, tar, which, yggdrasil virt-what
+   rsync, vim , bash complete
+
+   #dnf install chrony tar which virt-what rsync vim git 
+   #dnf install bash-completion
+
+-- install SELINUX TOOLS
+   #dnf install selinux-policy policycoreutils setools setroubleshoot setroubleshoot-server
+
+- patch
+
+
+
+-- PULL GIT
+
+   - git clone https://github.com/trentatlas/RHCSA-v10.git
+   - git clone https://github.com/trentatlas/REDDAWN.git
+   - git clone https://github.com/sandervanvugt/rhcsa10.git 
+   - git clone https://github.com/sandervanvugt/rhcsa9.git
+   - git clone https://github.com/trentatlas/MACLAB.git
+ 
+-- install desktop and change default target from multi to graphical
+
+   dnf group list 
+   dnf group list --hidden
+   #dnf groupinstall GNOME
+   # dnf groupinstall "Graphical Administration Tools"
+   #systemctl set-default graphical.target 
+   # dnf remove firefox
+   # loginctl enable-linger student
+   #systemctl reboot
+
+
+create users
+-- student member of wheel/sudo
+ flatpak install firefox, available to all users
+
+
+-- intern not member of wheel/ no sudo
+ install Chrom, only for intern
+ 
+
+ 
+-- CONFIGURE SSH to run on port 2222/tcp
+
+  #firewall-cmd  --add-port=2222/tcp --zone=block --permanent
+  #firewall-cmd --reload
+
+  # vim /etc/ssh/sshd_config
+  # semanage port -a -t ssh_port_t -p tcp #PORTNUMBER
+  #
+  Port 2222
+
+  #semanage port -a -t ssh_port_t -p tcp 2222
+  #systemctl reboot
+
+-- allow ICMP and do timestamp blocks - BLOCK ZONE
+
+   timestamp-reply
+   timestamp-request
+
+
+   firewall-cmd --add-protocol=icmp --zone=block --permanent
+   firewall-cmd reload 
+
+   firewall-cmd --add-icmp-block=timestamp-request --zone=block --permanent
+   firewall-cmd --add-icmp-block=timestamp-reply --zone=block --permanent
+   firewall-cmd --reload
+   firewall-cmd --list-all --zone=block 
+
+
+
+ -- CONFIGURE chrony logging and change TZ to Alaska
+# timedatectl set-timezone US/Alaska
+# date
+
+- Patch and reboot
+
+
+- disable kdump 
+  grub 18
+
+
+Sat Dec 20 08:48:34 AM AKST 2025 
+
+
+
+- SELINUX
+install apache
+run port 8082
+/u/www/html
+
+
+git clone https://github.com/SELinuxProject/refpolicy
+- DISKS
+
+- SDA
+use remainder of DISK for ROOTVG
+
+
+
+-SDB  
+ #pvcreate /dev/sdb
+ # vgcreate VGB /dev/sdb
+ create /opt/logs/ 25% of VGB xfs with LABEL
+ #lvcreate -l25%FREE -n OPTLOGSLV VGB
+
+ # lsblk /dev/sdb
+ NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+ sdb               8:16   1 29.7G  0 disk 
+ └─VGB-OPTLOGSLV 253:9    0  7.4G  0 lvm  
+
+ /etc/fstab
+ LABEL="OPTLOGSLV" /opt/logs	xfs	defaults 0 0
+
+
+
+- SDC
+parted
+make gpt partition
+
+
+make 10G optapp 
+(parted) mkpart OPTAPP
+File system type?  [ext2]? xfs                                            
+Start? 1                                                                  
+End? 10G                                                                  
+(parted) print                                                            
+Model: SanDisk SDDR-B531 (scsi)
+Disk /dev/sdc: 31.9GB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags: 
+
+Number  Start   End     Size    File system  Name    Flags
+ 1      1049kB  10.0GB  9999MB  xfs          OPTAPP
+
+
+
+mkpart 10 OPTORACLE ext4
+(parted) mkpart OPTORACLE                                                 
+File system type?  [ext2]? ext4                                           
+Start? 10G                                                                
+End? '20G                                                                 
+(parted) print
+Model: SanDisk SDDR-B531 (scsi)
+Disk /dev/sdc: 31.9GB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags: 
+
+Number  Start   End     Size    File system  Name       Flags
+ 1      1049kB  10.0GB  9999MB  xfs          OPTAPP
+ 2      10.0GB  20.0GB  9999MB  ext4         OPTORACLE
+
+(parted)                                            
+
+
+(parted) mkpart THEEND
+File system type?  [ext2]? xfs                                            
+Start? 20G
+End? -1s
+Warning: You requested a partition from 20.0GB to 31.9GB (sectors 39062500..62333951).
+The closest location we can manage is 20.0GB to 31.9GB (sectors 39061504..62333918).
+Is this still acceptable to you?
+Yes/No? Yes                                                               
+(parted) print                                                            
+Model: SanDisk SDDR-B531 (scsi)
+Disk /dev/sdc: 31.9GB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags: 
+
+Number  Start   End     Size    File system  Name       Flags
+ 1      1049kB  10.0GB  9999MB               OPTAPP
+ 2      10.0GB  20.0GB  9999MB               OPTORACLE
+ 3      20.0GB  31.9GB  11.9GB  xfs          THEEND
+
+(parted)                                                
+ 
+

@@ -1,0 +1,49 @@
+
+
+--- Kernel and /proc
+
+- ls /proc
+
+- SSH
+#ps auxw | egrep sshd
+#ls -l /proc/1130
+
+
+- SYSTEM INFO
+
+/proc/cpuinfo
+/proc/meminfo
+/proc/mounts
+/proc/cmdline
+
+
+- Network info
+# ls /sys/class/net/
+ens160  ens256  lo
+# cat /sys/class/net/ens256/operstate 
+up
+
+
+
+- kernel I/O schedulers
+# cat /sys/block/sda/queue/scheduler 
+none [mq-deadline] kyber bfq 
+
+- changed files
+
+atime -- access time = last time file opened
+
+mtime -- modified time = last time file contents was modified
+
+ctime -- changed time = last time file inode was modified
+
+Numeric arguments can be specified as
+
++n     for greater than n,
+-n     for less than n,
+n      for exactly n.
+
+# find /etc -type f -mtime -1
+/etc/fstab
+
+
