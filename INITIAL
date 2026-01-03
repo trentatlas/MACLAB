@@ -7,20 +7,20 @@
 
 -- setup networking and hostname
 rhelsrv1
-ens160 192.168.192.201/24 dmz
+ens160 192.168.192.201/24 drop
 ens256 10.199.25.201/24 internal - disable IPv6
 
 rhelsrv2
-ens160 192.168.192.202/24 dmz
+ens160 192.168.192.202/24 drop
 ens256 10.199.25.202/24 internal - disable IPv6
 
 - #firewall-cmd --get-default-zone
 - #firewall-cmd --state
 
-- #firewall-cmd --change-interface=ens160 --zone=dmz --permanent
+- #firewall-cmd --change-interface=ens160 --zone=drop --permanent
 - #firewall-cmd --change-interface=ens256 --zone=internal --permanent
 - #firewall-cmd --reload
-- #firewall-cmd --list-all --zone=dmz
+- #firewall-cmd --list-all --zone=drop
 - #firewall-cmd --list-all --zone=internal
 
 - CONFIGURE  SSH to listen on INTERNAL port 2222/tcp
@@ -33,7 +33,18 @@ ens256 10.199.25.202/24 internal - disable IPv6
    - semanage port -a -t ssh_port_t -p tcp 2222
    - edit restart [Service] from 42 to 18 
 
+-- CONFIGURE SSH to run on port 2222/tcp
 
+  #firewall-cmd  --add-port=2222/tcp --zone=drop --permanent
+  #firewall-cmd --reload
+
+  # vim /etc/ssh/sshd_config
+  # semanage port -a -t ssh_port_t -p tcp #PORTNUMBER
+  #
+  Port 2222
+
+  #semanage port -a -t ssh_port_t -p tcp 2222
+  #systemctl reboot
 
 - PERSISTIST JOURNALD
   #mkdir -p /var/log/journal
@@ -60,9 +71,9 @@ install httpd
 Listen IP:80 DMZ IP - Not Internal
 
 
-# firewall-cmd --add-service=http --zone=dmz --permanent
+# firewall-cmd --add-service=http --zone=drop --permanent
 # firewall-cmd --reload
-# firewall-cmd --list-all --zone=dmz
+# firewall-cmd --list-all --zone=drop
 
 201 - index.html west.external
 202 - index.html east.external
@@ -86,7 +97,11 @@ east.external
 -- install SELINUX TOOLS
    #dnf install selinux-policy policycoreutils setools setroubleshoot setroubleshoot-server
 
-- patch
+- patch and set TZ
+
+# timedatectl set-timezone US/Alaska
+# date
+# systemctl reboot
 
 
 
@@ -109,68 +124,145 @@ east.external
    # loginctl enable-linger student
    #systemctl reboot
 
+- Section II 
+
 
 create users
--- student member of wheel/sudo
+-FLATPAK - practice practice practice
++8G /home
++8G /var
+
+-t student member of wheel/sudo
  flatpak install firefox, available to all users
 
 
 -- intern not member of wheel/ no sudo
- install Chrom, only for intern
+ install Chromium, only for intern
+ 
+https://github.com/trentatlas/RHCSA-v10.git
+https://github.com/trentatlas/MACLAB.git
+https://github.com/trentatlas/REDDAWN.git 
+
+
+$ mkdir -p .config/flatpak
+$ flatpak remote-add --no-gpg-verify --if-not-exists flathup --user  https://dl.flathub.org/repo/flathub.flatpakrepo
+$ flatpak list 
+$ flatpak search Chromium
+$ flatpak install --user io.github.ungoogled_software.ungoogled_chromium
+$ flatpak list
+$ flatpak run io.github.ungoogled_software.ungoogled_chromium 2> /dev/null
+
  
 
- 
--- CONFIGURE SSH to run on port 2222/tcp
-
-  #firewall-cmd  --add-port=2222/tcp --zone=block --permanent
-  #firewall-cmd --reload
-
-  # vim /etc/ssh/sshd_config
-  # semanage port -a -t ssh_port_t -p tcp #PORTNUMBER
-  #
-  Port 2222
-
-  #semanage port -a -t ssh_port_t -p tcp 2222
-  #systemctl reboot
-
--- allow ICMP and do timestamp blocks - BLOCK ZONE
+-- allow ICMP and drop  timestamp in DROP ZONE
 
    timestamp-reply
    timestamp-request
 
 
-   firewall-cmd --add-protocol=icmp --zone=block --permanent
+   firewall-cmd --add-protocol=icmp --zone=drop --permanent
    firewall-cmd reload 
 
-   firewall-cmd --add-icmp-block=timestamp-request --zone=block --permanent
-   firewall-cmd --add-icmp-block=timestamp-reply --zone=block --permanent
+   firewall-cmd --add-icmp-drop=timestamp-request --zone=drop --permanent
+   firewall-cmd --add-icmp-drop=timestamp-reply --zone=drop --permanent
    firewall-cmd --reload
-   firewall-cmd --list-all --zone=block 
+   firewall-cmd --list-all --zone=drop 
 
 
 
  -- CONFIGURE chrony logging and change TZ to Alaska
 # timedatectl set-timezone US/Alaska
 # date
-
-- Patch and reboot
-
-
-- disable kdump 
-  grub 18
+Sat Jan  3 09:52:53 AM AKST 2026
 
 
-Sat Dec 20 08:48:34 AM AKST 2025 
+- disable kdump  and mask service
+grubby --update-kernel ALL --remove-args "crashkernel=2G-4G:256M,4G-64G:320M,64G-:576M"
+grub2-mkconfig -o /boot/grub2/grub.cfg 
+
+# systemctl list-unit-files | egrep kdump
+kdump.service   
+
+# systemctl disable kdump
+Removed '/etc/systemd/system/multi-user.target.wants/kdump.service'.
+
+# systemctl mask kdump
+Created symlink '/etc/systemd/system/kdump.service' → '/dev/null'.
+
+
+
+
+-- CRON
+# man 5 crontab
+
+create script that redirect STDOUT and STDERR to two different files in /tmp/
+runs every two minutes
+
+*/2 * * * * /usr/local/sbin/ECHO_DATE_TMP.SH 2> /tmp/date_error 1> /tmp/date_time
+
+# cat /tmp/date_time 
+Sat Jan  3 10:18:01 AM AKST 2026
+
+# cat /tmp/date_error 
+/usr/local/sbin/ECHO_DATE_TMP.SH: line 5: fhjkkjhkjsahddf: command not found
+
 
 
 
 - SELINUX
+
 install apache
 run port 8082
 /u/www/html
 
+# semanage port -l
+# semanage port -l | egrep http_port_t
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+http_port_t                    udp      80, 443
 
-git clone https://github.com/SELinuxProject/refpolicy
+# egrep seman /etc/ssh/sshd_config
+# semanage port -a -t ssh_port_t -p tcp #PORTNUMBER
+
+# semanage port -l | egrep ssh
+ssh_port_t                     tcp      2222, 22
+
+STEPS
+# semanage port -a -t http_port_t -p tcp 8082
+# semanage port -l | egrep http_port_t
+http_port_t                    tcp      8082, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+
+# egrep Listen /etc/httpd/conf/httpd.conf 
+Listen 192.168.192.201:8082
+
+# firewall-cmd --add-port=8082/tcp --zone=drop --permanent
+# firewall-cmd --reload
+# systemctl restart httpd
+
+man semanage-fcontext
+
+# semanage fcontext -a -t httpd_sys_content_t "/u/www(/.*)?"
+# restorecon -R -v /u/www
+
+trent$ curl http://west.external:8082/
+west.external /u/www/html
+
+
+
+-- WEB nginx
+
+dnf install nginx
+cd /usr/share/nginx/html 
+rm -f index.html
+vim index.html
+cd /etc/nginx/
+vim nginx.conf
+systemctl enable --now nginx
+
+trent$ curl http://west.external
+nginx INDEX - WEST
+
+
+
 - DISKS
 
 - SDA
