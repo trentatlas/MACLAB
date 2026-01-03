@@ -1,0 +1,28 @@
+Create simple shell scripts
+
+Conditionally execute code (use of: if, test, [], etc.)
+Use Looping constructs (for, etc.) to process file, command line input
+Process script inputs ($1, $2, etc.)
+Processing output of shell commands within a script
+
+Use input-output redirection (>, >>, |, 2>, etc.)
+
+
+Archive, compress, unpack, and uncompress files using tar, gzip, and bzip2
+
+
+Locate and interpret system log files and journals
+journalctl
+
+Schedule tasks using at cron and systemd timer units
+timers
+
+Manage users and groups
+
+Create, delete, and modify local user accounts
+Change passwords and adjust password aging for local user accounts
+Create, delete, and modify local groups and group memberships
+Configure privileged access
+
+
+

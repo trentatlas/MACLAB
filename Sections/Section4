@@ -1,0 +1,22 @@
+Operate running systems
+
+Boot, reboot, and shut down a system normally
+Boot systems into different targets manually
+Interrupt the boot process in order to gain access to a system
+Identify CPU/memory intensive processes and kill processes
+Adjust process scheduling
+Manage tuning profiles
+Locate and interpret system log files and journals
+Preserve system journals
+Start, stop, and check the status of network services
+Securely transfer files between systems
+
+
+
+As with all Red Hat performance-based exams, configurations must persist after reboot without intervention.
+ 
+
+
+https://www.redhat.com/en/services/training/ex200-red-hat-certified-system-administrator-rhcsa-exam?section=objectives
+
+

@@ -1,0 +1,16 @@
+Manage basic networking
+
+Configure IPv4 and IPv6 addresses
+Configure hostname resolution
+Configure network services to start automatically at boot
+Restrict network access using firewalld and firewall-cmd
+
+
+
+As with all Red Hat performance-based exams, configurations must persist after reboot without intervention.
+ 
+
+
+https://www.redhat.com/en/services/training/ex200-red-hat-certified-system-administrator-rhcsa-exam?section=objectives
+
+

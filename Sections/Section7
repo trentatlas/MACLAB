@@ -1,0 +1,18 @@
+Deploy, configure, and maintain systems
+
+Schedule tasks using at cron and systemd timer units
+Start and stop services and configure services to start automatically at boot
+Configure systems to boot into a specific target automatically
+Configure time service clients
+Install and update software packages from Red Hat Content Delivery Network, a remote repository, or from the local file system
+Modify the system bootloader  
+
+
+
+As with all Red Hat performance-based exams, configurations must persist after reboot without intervention.
+ 
+
+
+https://www.redhat.com/en/services/training/ex200-red-hat-certified-system-administrator-rhcsa-exam?section=objectives
+
+

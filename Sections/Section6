@@ -1,0 +1,17 @@
+Create and configure file systems
+
+Create, mount, unmount, and use VFAT, ext4, and xfs file systems
+Mount and unmount network file systems using NFS
+Configure autofs
+Extend existing logical volumes
+Diagnose and correct file permission problems
+
+
+
+As with all Red Hat performance-based exams, configurations must persist after reboot without intervention.
+ 
+
+
+https://www.redhat.com/en/services/training/ex200-red-hat-certified-system-administrator-rhcsa-exam?section=objectives
+
+
