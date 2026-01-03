@@ -1,6 +1,6 @@
 Configure local storage
 
-List, create, delete partitions on GPT disks
+List, create, delete partitions on GPT disks POINT
 Create and remove physical volumes
 Assign physical volumes to volume groups
 Create and delete logical volumes
