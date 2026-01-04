@@ -261,7 +261,73 @@ systemctl enable --now nginx
 trent$ curl http://west.external
 nginx INDEX - WEST
 
+-- AUTOFS
+bastion host is servering NFS 
 
+# dnf install nfs-utils rpcbind
+# dnf install autofs
+# systemctl enable --now nfs-server.service
+# systemctl enable --now rpcbind.service
+# systemctl enable --now autofs.service
+
+# showmount -e bastion
+Export list for bastion:
+/var/www *
+/home    *
+/nfsrepo *
+
+
+Configure /nfsrepo REPO to install htop nmon iftop
+
+# vim /etc/auto.master
+/misc   /etc/auto.misc
+/nfsrepo        /etc/nfsrepo.misc
+
+# vim /etc/nfsrepo.misc
+# cat /etc/nfsrepo.misc
+repo -ro        bastion:/nfsrepo
+
+# systemctl restart autofs.service
+# systemctl daemon-reload
+
+# df -h
+bastion:/nfsrepo            8.0G  4.8G  3.2G  61% /nfsrepo/repo
+# cd /nfsrepo/repo
+
+# ls -l /nfsrepo/repo/
+total 0
+lrwxrwxrwx. 1 root   root   36 Jan  3 14:52 extensions -> rhel-10-for-aarch64-extensions-rpms/
+-rw-r--r--. 1 root   root    0 Sep 16 16:23 NFS.FILE
+drwxr-xr-x. 4 apache apache 38 Jan  2 09:52 rhel-10-for-aarch64-extensions-rpms
+
+# dnf config-manager --add-repo=file:///nfsrepo/repo/extensions/
+
+# dnf install htop nmon iftop
+
+mkdir -p  /u/collect
+cd /u/collect/
+nmon -ft -s 3  -c 96
+creats CSV file!
+
+- /export/home NFS
+
+useradd -c "Trent" -s /bin/bash trent
+passwd trent
+usermod -d /export/home/trent trent
+
+
+/export/home/trent
+root@rhelsrv1:~# cat /etc/export.misc 
+home -rw        bastion:/home
+
+trent@rhelsrv1:~$ pwd
+/export/home/trent
+trent@rhelsrv1:~$ id
+uid=1001(trent) gid=1001(trent) groups=1001(trent)
+
+# df -h /export/home
+Filesystem      Size  Used Avail Use% Mounted on
+bastion:/home   3.0G  210M  2.8G   7% /export/home
 
 - DISKS
 
