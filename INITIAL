@@ -208,7 +208,13 @@ Removed '/etc/systemd/system/multi-user.target.wants/kdump.service'.
 # systemctl mask kdump
 Created symlink '/etc/systemd/system/kdump.service' → '/dev/null'.
 
+#  grubby --update-kernel ALL --remove-args "crashkernel=2G-4G:256M,4G-64G:320M,64G-:576M"
 
+
+- add audit to kernal paraments
+grubby --update-kernel ALL --args audit=1
+grubby --update-kernel ALL --args  audit_backlog_limit=8192
+grub2-mkconfig -o /boot/grub2/grub.cfg
 
 
 -- CRON
@@ -232,7 +238,14 @@ Sat Jan  3 10:18:01 AM AKST 2026
 
 install apache
 run port 8082
-/u/www/html
+/opt/www/html - SDA 75%
+
+# lvcreate -n OPTWWWLV -l75%FREE WWWVG
+# lsblk 
+NAME             MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda                8:0    0   18G  0 disk 
+└─WWWVG-OPTWWWLV 253:4    0 13.5G  0 lvm  
+
 
 # semanage port -l
 # semanage port -l | egrep http_port_t
@@ -265,6 +278,28 @@ man semanage-fcontext
 trent$ curl http://west.external:8082/
 west.external /u/www/html
 
+
+-- WEST NFS SHARE /OPT/WWW
+
+-- EAST 
+/etc/fstab
+rhelsrv1:/opt/www       /opt/www        nfs     defaults        0 0
+#systemctl daemon-reload
+
+root@rhelsrv2:~# df -h /opt/www
+Filesystem         Size  Used Avail Use% Mounted on
+rhelsrv1:/opt/www   14G  295M   14G   3% /opt/www
+
+
+# getsebool -a | egrep -i http | egrep nfs
+httpd_use_nfs --> off
+# setsebool -P httpd_use_nfs on
+# getsebool -a | egrep -i http | egrep nfs
+httpd_use_nfs --> on
+
+
+trent$ curl  http://east.external:8082
+WEST /opt/www/html
 
 
 -- WEB nginx
