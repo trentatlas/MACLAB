@@ -100,6 +100,8 @@ east.external
 - patch and set TZ
 
 # timedatectl set-timezone US/Alaska
+# timedatectl set-timezone US/Arizona
+
 # date
 # systemctl reboot
 
@@ -126,12 +128,29 @@ east.external
 
 - Section II 
 
+-- change tuned to -> network-throughput
+
+remove tuned RPM and reinstall
+dnf remove tuned-utils tuned-profiles-oracle tuned-ppd tuned
+reboot
+dnf install tuned tuned-profiles-postgresql tuned-utils
+
+
+
+# tuned-adm active
+Current active profile: throughput-performance
+
+# tuned-adm list
+# tuned-adm profile network-throughput
+# tuned-adm active
+Current active profile: network-throughput
+
 
 create users
 -FLATPAK - practice practice practice
 +8G /home
 +8G /var
-
+	
 -t student member of wheel/sudo
  flatpak install firefox, available to all users
 
