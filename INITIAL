@@ -217,6 +217,8 @@ grubby --update-kernel ALL --args  audit_backlog_limit=8192
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
 
+https://www.kernel.org/doc/html/v6.12/admin-guide/kernel-parameters.html
+
 -- CRON
 # man 5 crontab
 
@@ -327,8 +329,16 @@ bastion host is servering NFS
 # showmount -e bastion
 Export list for bastion:
 /var/www *
-/home    *
+/export    *
 /nfsrepo *
+
+# man 5 autofs
+Wildcard Key
+ *         server:/export/home/&
+
+# cat /etc/home.export 
+*       -rw     bastion:/export/&
+
 
 
 Configure /nfsrepo REPO to install htop nmon iftop
@@ -363,25 +373,7 @@ cd /u/collect/
 nmon -ft -s 3  -c 96
 creats CSV file!
 
-- /export/home NFS
 
-useradd -c "Trent" -s /bin/bash trent
-passwd trent
-usermod -d /export/home/trent trent
-
-
-/export/home/trent
-root@rhelsrv1:~# cat /etc/export.misc 
-home -rw        bastion:/home
-
-trent@rhelsrv1:~$ pwd
-/export/home/trent
-trent@rhelsrv1:~$ id
-uid=1001(trent) gid=1001(trent) groups=1001(trent)
-
-# df -h /export/home
-Filesystem      Size  Used Avail Use% Mounted on
-bastion:/home   3.0G  210M  2.8G   7% /export/home
 
 - DISKS
 
